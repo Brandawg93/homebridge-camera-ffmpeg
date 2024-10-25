@@ -24,6 +24,7 @@
     }
   ],
   "scripts": {
+    "check": "npm install && npm outdated",
     "clean": "rimraf ./dist",
     "build": "rimraf ./dist && tsc",
     "lint": "eslint src/*.ts --fix",
