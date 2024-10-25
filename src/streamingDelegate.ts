@@ -80,7 +80,7 @@ export class StreamingDelegate implements CameraStreamingDelegate {
   private readonly log: Logger
   private readonly cameraName: string
   private readonly unbridge: boolean
-  private readonly videoConfig: VideoConfig
+  private readonly videoConfig!: VideoConfig
   private readonly videoProcessor: string
   readonly controller: CameraController
   private snapshotPromise?: Promise<Buffer>
@@ -101,7 +101,6 @@ export class StreamingDelegate implements CameraStreamingDelegate {
 
     this.cameraName = cameraConfig.name!
     this.unbridge = cameraConfig.unbridge ?? true
-    this.videoConfig = videoConfig
     this.videoProcessor = videoProcessor || ffmpegPath as unknown as string || 'ffmpeg'
     this.recording = cameraConfig.videoConfig?.recording ?? false
     this.prebuffer = this.recording && (cameraConfig.videoConfig?.prebuffer ?? false)
@@ -134,7 +133,7 @@ export class StreamingDelegate implements CameraStreamingDelegate {
     this.recordingDelegate = this.recording ? new RecordingDelegate(this.log, this.cameraName, videoConfig, this.api, this.hap, this.videoProcessor) : null
 
     const options: CameraControllerOptions = {
-      cameraStreamCount: this.videoConfig.maxStreams || 2, // HomeKit requires at least 2 streams, but 1 is also just fine
+      cameraStreamCount: videoConfig.maxStreams ?? 2, // HomeKit requires at least 2 streams, but 1 is also just fine
       delegate: this,
       streamingOptions: {
         supportedCryptoSuites: [hap.SRTPCryptoSuites.AES_CM_128_HMAC_SHA1_80],
@@ -158,7 +157,7 @@ export class StreamingDelegate implements CameraStreamingDelegate {
           },
         },
         audio: {
-          twoWayAudio: !!this.videoConfig.returnAudioTarget,
+          twoWayAudio: !!videoConfig.returnAudioTarget,
           codecs: [
             {
               type: AudioStreamingCodecType.AAC_ELD,
@@ -232,8 +231,7 @@ export class StreamingDelegate implements CameraStreamingDelegate {
     }
     resInfo.snapFilter = filters.join(',')
     if ((noneFilter < 0) && (resInfo.width > 0 || resInfo.height > 0)) {
-      resInfo.resizeFilter = `scale=${resInfo.width > 0 ? `'min(${resInfo.width},iw)'` : 'iw'}:${
-        resInfo.height > 0 ? `'min(${resInfo.height},ih)'` : 'ih'
+      resInfo.resizeFilter = `scale=${resInfo.width > 0 ? `'min(${resInfo.width},iw)'` : 'iw'}:${resInfo.height > 0 ? `'min(${resInfo.height},ih)'` : 'ih'
       }:force_original_aspect_ratio=decrease`
       filters.push(resInfo.resizeFilter)
       filters.push('scale=trunc(iw/2)*2:trunc(ih/2)*2') // Force to fit encoder restrictions
@@ -250,8 +248,7 @@ export class StreamingDelegate implements CameraStreamingDelegate {
     this.snapshotPromise = new Promise((resolve, reject) => {
       const startTime = Date.now()
       const ffmpegArgs = `${this.videoConfig.stillImageSource || this.videoConfig.source! // Still
-      } -frames:v 1${
-        snapFilter ? ` -filter:v ${snapFilter}` : ''
+      } -frames:v 1${snapFilter ? ` -filter:v ${snapFilter}` : ''
       } -f image2 -`
       + ` -hide_banner`
       + ` -loglevel error`
@@ -307,8 +304,7 @@ export class StreamingDelegate implements CameraStreamingDelegate {
   resizeSnapshot(snapshot: Buffer, resizeFilter?: string): Promise<Buffer> {
     return new Promise<Buffer>((resolve, reject) => {
       const ffmpegArgs = `-i pipe:` // Resize
-        + ` -frames:v 1${
-          resizeFilter ? ` -filter:v ${resizeFilter}` : ''
+        + ` -frames:v 1${resizeFilter ? ` -filter:v ${resizeFilter}` : ''
         } -f image2 -`
 
       this.log.debug(`Resize command: ${this.videoProcessor} ${ffmpegArgs}`, this.cameraName, this.videoConfig.debug)
@@ -338,8 +334,7 @@ export class StreamingDelegate implements CameraStreamingDelegate {
 
       const snapshot = await (this.snapshotPromise || this.fetchSnapshot(resolution.snapFilter))
 
-      this.log.debug(`Sending snapshot: ${resolution.width > 0 ? resolution.width : 'native'} x ${
-        resolution.height > 0 ? resolution.height : 'native'
+      this.log.debug(`Sending snapshot: ${resolution.width > 0 ? resolution.width : 'native'} x ${resolution.height > 0 ? resolution.height : 'native'
       }${cachedSnapshot ? ' (cached)' : ''}`, this.cameraName, this.videoConfig.debug)
 
       const resized = await this.resizeSnapshot(snapshot, resolution.resizeFilter)
@@ -430,12 +425,9 @@ export class StreamingDelegate implements CameraStreamingDelegate {
         videoBitrate = 0
       }
 
-      this.log.debug(`Video stream requested: ${request.video.width} x ${request.video.height}, ${
-        request.video.fps} fps, ${request.video.max_bit_rate} kbps`, this.cameraName, this.videoConfig.debug)
-      this.log.info(`Starting video stream: ${resolution.width > 0 ? resolution.width : 'native'} x ${
-        resolution.height > 0 ? resolution.height : 'native'}, ${fps > 0 ? fps : 'native'
-      } fps, ${videoBitrate > 0 ? videoBitrate : '???'} kbps${
-        this.videoConfig.audio ? (` (${request.audio.codec})`) : ''}`, this.cameraName)
+      this.log.debug(`Video stream requested: ${request.video.width} x ${request.video.height}, ${request.video.fps} fps, ${request.video.max_bit_rate} kbps`, this.cameraName, this.videoConfig.debug)
+      this.log.info(`Starting video stream: ${resolution.width > 0 ? resolution.width : 'native'} x ${resolution.height > 0 ? resolution.height : 'native'}, ${fps > 0 ? fps : 'native'
+      } fps, ${videoBitrate > 0 ? videoBitrate : '???'} kbps${this.videoConfig.audio ? (` (${request.audio.codec})`) : ''}`, this.cameraName)
 
       let ffmpegArgs = this.videoConfig.source!
 
@@ -443,10 +435,8 @@ export class StreamingDelegate implements CameraStreamingDelegate {
         += `${this.videoConfig.mapvideo ? ` -map ${this.videoConfig.mapvideo}` : ' -an -sn -dn'
         } -codec:v ${vcodec
         } -pix_fmt yuv420p`
-        + ` -color_range mpeg${
-          fps > 0 ? ` -r ${fps}` : ''
-        } -f rawvideo${
-          encoderOptions ? ` ${encoderOptions}` : ''
+        + ` -color_range mpeg${fps > 0 ? ` -r ${fps}` : ''
+        } -f rawvideo${encoderOptions ? ` ${encoderOptions}` : ''
         }${resolution.videoFilter ? ` -filter:v ${resolution.videoFilter}` : ''
         }${videoBitrate > 0 ? ` -b:v ${videoBitrate}k` : ''
         } -payload_type ${request.video.pt}`
@@ -555,8 +545,7 @@ export class StreamingDelegate implements CameraStreamingDelegate {
         this.startStream(request, callback)
         break
       case StreamRequestTypes.RECONFIGURE:
-        this.log.debug(`Received request to reconfigure: ${request.video.width} x ${request.video.height}, ${
-          request.video.fps} fps, ${request.video.max_bit_rate} kbps (Ignored)`, this.cameraName, this.videoConfig.debug)
+        this.log.debug(`Received request to reconfigure: ${request.video.width} x ${request.video.height}, ${request.video.fps} fps, ${request.video.max_bit_rate} kbps (Ignored)`, this.cameraName, this.videoConfig.debug)
         callback()
         break
       case StreamRequestTypes.STOP:
