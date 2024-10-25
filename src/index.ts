@@ -89,7 +89,7 @@ class FfmpegPlatform implements DynamicPlatformPlugin {
       }
 
       if (!error) {
-        const uuid = hap.uuid.generate(cameraConfig.name!)
+        const uuid = this.api.hap.uuid.generate(cameraConfig.name!)
         if (this.cameraConfigs.has(uuid)) {
           // Camera names must be unique
           this.log.warn('Multiple cameras are configured with this name. Duplicate cameras will be skipped.', cameraConfig.name)
