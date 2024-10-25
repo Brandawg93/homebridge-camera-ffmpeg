@@ -10,8 +10,7 @@ import {
   Logging,
   PlatformAccessory,
   PlatformAccessoryEvent,
-  PlatformConfig,
-  RTPStreamManagement
+  PlatformConfig
 } from 'homebridge';
 import http from 'http';
 import mqtt from 'mqtt';
@@ -140,19 +139,21 @@ class FfmpegPlatform implements DynamicPlatformPlugin {
     const delegate = new StreamingDelegate(this.log, cameraConfig, this.api, hap, accessory, this.config.videoProcessor);
 
     accessory.configureController(delegate.controller);
-   
-    if(cameraConfig.videoConfig.prebuffer) {
-      this.log.debug("Start prebuffering...", cameraConfig.name);
-      delegate.recordingDelegate.startPreBuffer();
+
+    if (cameraConfig.videoConfig?.prebuffer) {
+      this.log.debug('Start prebuffering...', cameraConfig.name);
+      if (delegate.recordingDelegate) {
+        delegate.recordingDelegate.startPreBuffer();
+      }
     }
 
     // add motion sensor after accessory.configureController. Secure Video creates it own linked motion service
     if (cameraConfig.motion) {
-      this.log.debug("add motion stuff", cameraConfig.name);
+      this.log.debug('add motion stuff', cameraConfig.name);
       const motionSensor = new hap.Service.MotionSensor(cameraConfig.name);
-      
-      if(!accessory.getService(hap.Service.MotionSensor)) accessory.addService(motionSensor);
-      else this.log.debug("found motion sensor service", cameraConfig.name);
+
+      if (!accessory.getService(hap.Service.MotionSensor)) accessory.addService(motionSensor);
+      else this.log.debug('found motion sensor service', cameraConfig.name);
       if (cameraConfig.switches) {
         const motionTrigger = new hap.Service.Switch(cameraConfig.name + ' Motion Trigger', 'MotionTrigger');
         motionTrigger
@@ -168,8 +169,8 @@ class FfmpegPlatform implements DynamicPlatformPlugin {
     // add doorbell  after accessory.configureController. Secure Video creates it own linked doorbell service
     if (cameraConfig.doorbell) {
       const doorbell = new hap.Service.Doorbell(cameraConfig.name + ' Doorbell');
-      if(!accessory.getService(hap.Service.Doorbell)) accessory.addService(doorbell);
-      else this.log.debug("found doorbell sensor service", cameraConfig.name);
+      if (!accessory.getService(hap.Service.Doorbell)) accessory.addService(doorbell);
+      else this.log.debug('found doorbell sensor service', cameraConfig.name);
       if (cameraConfig.switches) {
         const doorbellTrigger = new hap.Service.Switch(cameraConfig.name + ' Doorbell Trigger', 'DoorbellTrigger');
         doorbellTrigger
@@ -191,15 +192,15 @@ class FfmpegPlatform implements DynamicPlatformPlugin {
       if (cameraConfig.mqtt) {
         if (cameraConfig.mqtt.motionTopic) {
           this.addMqttAction(cameraConfig.mqtt.motionTopic, cameraConfig.mqtt.motionMessage || cameraConfig.name!,
-            {accessory: accessory, active: true, doorbell: false});
+            { accessory: accessory, active: true, doorbell: false });
         }
         if (cameraConfig.mqtt.motionResetTopic) {
           this.addMqttAction(cameraConfig.mqtt.motionResetTopic, cameraConfig.mqtt.motionResetMessage || cameraConfig.name!,
-            {accessory: accessory, active: false, doorbell: false});
+            { accessory: accessory, active: false, doorbell: false });
         }
         if (cameraConfig.mqtt.doorbellTopic) {
           this.addMqttAction(cameraConfig.mqtt.doorbellTopic, cameraConfig.mqtt.doorbellMessage || cameraConfig.name!,
-            {accessory: accessory, active: true, doorbell: true});
+            { accessory: accessory, active: true, doorbell: true });
         }
       }
     }
