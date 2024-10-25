@@ -40,8 +40,8 @@ import {
 } from 'homebridge'
 import pickPort from 'pick-port'
 
-import { FfmpegProcess } from './ffmpeg'
-import { FRAGMENTS_LENGTH, PREBUFFER_LENGTH, RecordingDelegate } from './recordingDelegate'
+import { FfmpegProcess } from './ffmpeg.js'
+import { FRAGMENTS_LENGTH, PREBUFFER_LENGTH, RecordingDelegate } from './recordingDelegate.js'
 
 interface SessionInfo {
   address: string // address of the HAP controller
