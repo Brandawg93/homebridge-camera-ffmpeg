@@ -150,7 +150,6 @@ export class RecordingDelegate implements CameraRecordingDelegate {
     this.hap = hap
     this.cameraName = cameraName
     this.videoProcessor = videoProcessor || ffmpegPathString || 'ffmpeg'
-    this.videoConfig = videoConfig
 
     api.on(APIEvent.SHUTDOWN, () => {
       if (this.preBufferSession) {

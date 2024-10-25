@@ -94,13 +94,14 @@ export class StreamingDelegate implements CameraStreamingDelegate {
   ongoingSessions: Map<string, ActiveSession> = new Map()
   timeouts: Map<string, NodeJS.Timeout> = new Map()
 
-  constructor(log: Logger, cameraConfig: CameraConfig, videoConfig: VideoConfig, api: API, hap: HAP, accessory: PlatformAccessory, videoProcessor?: string) {
+  constructor(log: Logger, cameraConfig: CameraConfig, api: API, hap: HAP, accessory: PlatformAccessory, videoProcessor?: string) {
     this.log = log
     this.hap = hap
     this.api = api
 
     this.cameraName = cameraConfig.name!
     this.unbridge = cameraConfig.unbridge ?? true
+    this.videoConfig = cameraConfig.videoConfig ?? {}
     this.videoProcessor = videoProcessor || ffmpegPath as unknown as string || 'ffmpeg'
     this.recording = cameraConfig.videoConfig?.recording ?? false
     this.prebuffer = this.recording && (cameraConfig.videoConfig?.prebuffer ?? false)
@@ -130,10 +131,10 @@ export class StreamingDelegate implements CameraStreamingDelegate {
       }
       recordingCodecs.push(entry)
     }
-    this.recordingDelegate = this.recording ? new RecordingDelegate(this.log, this.cameraName, videoConfig, this.api, this.hap, this.videoProcessor) : null
+    this.recordingDelegate = this.recording ? new RecordingDelegate(this.log, this.cameraName, this.videoConfig, this.api, this.hap, this.videoProcessor) : null
 
     const options: CameraControllerOptions = {
-      cameraStreamCount: videoConfig.maxStreams ?? 2, // HomeKit requires at least 2 streams, but 1 is also just fine
+      cameraStreamCount: this.videoConfig.maxStreams ?? 2, // HomeKit requires at least 2 streams, but 1 is also just fine
       delegate: this,
       streamingOptions: {
         supportedCryptoSuites: [hap.SRTPCryptoSuites.AES_CM_128_HMAC_SHA1_80],
@@ -157,7 +158,7 @@ export class StreamingDelegate implements CameraStreamingDelegate {
           },
         },
         audio: {
-          twoWayAudio: !!videoConfig.returnAudioTarget,
+          twoWayAudio: !!this.videoConfig.returnAudioTarget,
           codecs: [
             {
               type: AudioStreamingCodecType.AAC_ELD,

@@ -11,7 +11,7 @@ import type {
 } from 'homebridge'
 
 import type { AutomationReturn } from './autoTypes.js'
-import type { CameraConfig, FfmpegPlatformConfig, VideoConfig } from './configTypes.js'
+import type { CameraConfig, FfmpegPlatformConfig } from './configTypes.js'
 
 import { readFileSync } from 'node:fs'
 import http from 'node:http'
@@ -42,7 +42,6 @@ class FfmpegPlatform implements DynamicPlatformPlugin {
   private readonly api: API
   private readonly config: FfmpegPlatformConfig
   private readonly cameraConfigs: Map<string, CameraConfig> = new Map()
-  private readonly videoConfig?: VideoConfig
   private readonly cachedAccessories: Array<PlatformAccessory> = []
   private readonly accessories: Array<PlatformAccessory> = []
   private readonly motionTimers: Map<string, NodeJS.Timeout> = new Map()
@@ -58,31 +57,30 @@ class FfmpegPlatform implements DynamicPlatformPlugin {
       let error = false
 
       if (!cameraConfig.name) {
+        this.log.error('One of your cameras has no name configured. This camera will be skipped.')
         cameraConfig.name = `Camera ${this.cameraConfigs.size + 1}`
-        this.log.error(`One of your cameras has no name configured, using ${cameraConfig.name}.`)
         error = false
       }
       if (!cameraConfig.videoConfig) {
         this.log.error('The videoConfig section is missing from the config. This camera will be skipped.', cameraConfig.name)
         error = true
       } else {
-        const videoConfig = cameraConfig.videoConfig
-        if (!videoConfig.source) {
+        if (!cameraConfig.videoConfig.source) {
           this.log.error('There is no source configured for this camera. This camera will be skipped.', cameraConfig.name)
           error = true
         } else {
-          const sourceArgs = videoConfig.source.split(/\s+/)
+          const sourceArgs = cameraConfig.videoConfig.source.split(/\s+/)
           if (!sourceArgs.includes('-i')) {
             this.log.warn('The source for this camera is missing "-i", it is likely misconfigured.', cameraConfig.name)
           }
         }
-        if (videoConfig.stillImageSource) {
-          const stillArgs = videoConfig.stillImageSource.split(/\s+/)
+        if (cameraConfig.videoConfig.stillImageSource) {
+          const stillArgs = cameraConfig.videoConfig.stillImageSource.split(/\s+/)
           if (!stillArgs.includes('-i')) {
             this.log.warn('The stillImageSource for this camera is missing "-i", it is likely misconfigured.', cameraConfig.name)
           }
         }
-        if (videoConfig.vcodec === 'copy' && videoConfig.videoFilter) {
+        if (cameraConfig.videoConfig.vcodec === 'copy' && cameraConfig.videoConfig.videoFilter) {
           this.log.warn('A videoFilter is defined, but the copy vcodec is being used. This will be ignored.', cameraConfig.name)
         }
       }
@@ -144,7 +142,7 @@ class FfmpegPlatform implements DynamicPlatformPlugin {
       accessory.removeService(doorbellSwitch)
     }
 
-    const delegate = new StreamingDelegate(this.log, cameraConfig, this.videoConfig!, this.api, this.api.hap, accessory, this.config.videoProcessor)
+    const delegate = new StreamingDelegate(this.log, cameraConfig, this.api, this.api.hap, accessory, this.config.videoProcessor)
 
     accessory.configureController(delegate.controller)
 
