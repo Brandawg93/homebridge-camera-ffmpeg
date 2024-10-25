@@ -15,7 +15,7 @@ jobs:
       - uses: actions/checkout@v2.4.0
         with:
           ref: ${{github.event.inputs.ref}}
-      - uses: actions/setup-node@v2.5.1
+      - uses: actions/setup-node@v4.1.0
         with:
           node-version: 12
       - name: npm install and build
@@ -36,7 +36,7 @@ jobs:
       - uses: actions/checkout@v2.4.0
         with:
           ref: ${{github.event.inputs.ref}}
-      - uses: actions/setup-node@v2.5.1
+      - uses: actions/setup-node@v4.1.0
         with:
           node-version: 12
           registry-url: https://registry.npmjs.org/
