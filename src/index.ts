@@ -58,7 +58,8 @@ class FfmpegPlatform implements DynamicPlatformPlugin {
 
       if (!cameraConfig.name) {
         this.log.error('One of your cameras has no name configured. This camera will be skipped.')
-        error = true
+        cameraConfig.name = `Camera ${this.cameraConfigs.size + 1}`
+        error = false
       }
       if (!cameraConfig.videoConfig) {
         this.log.error('The videoConfig section is missing from the config. This camera will be skipped.', cameraConfig.name)
@@ -85,7 +86,7 @@ class FfmpegPlatform implements DynamicPlatformPlugin {
       }
 
       if (!error) {
-        const uuid = this.api.hap.uuid.generate(cameraConfig.name!)
+        const uuid = this.api.hap.uuid.generate(cameraConfig.name ?? `Camera ${this.cameraConfigs.size + 1}`)
         if (this.cameraConfigs.has(uuid)) {
           // Camera names must be unique
           this.log.warn('Multiple cameras are configured with this name. Duplicate cameras will be skipped.', cameraConfig.name)
@@ -359,23 +360,17 @@ class FfmpegPlatform implements DynamicPlatformPlugin {
 
   didFinishLaunching(): void {
     for (const [uuid, cameraConfig] of this.cameraConfigs) {
-      if (cameraConfig.unbridge) {
-        const accessory = new this.api.platformAccessory(cameraConfig.name!, uuid)
-        this.log.info('Configuring unbridged accessory...', accessory.displayName)
+      const unbridge = cameraConfig.unbridge ?? true
+      const name = cameraConfig.name || `Camera ${this.cameraConfigs.size + 1}`
+      const cachedAccessory = this.cachedAccessories.find((curAcc: PlatformAccessory) => curAcc.UUID === uuid)
+      if (!cachedAccessory) {
+        const accessory = new this.api.platformAccessory(name, uuid)
+        this.log.info('Configuring bridged accessory...', accessory.displayName)
         this.setupAccessory(accessory, cameraConfig)
-        this.api.publishExternalAccessories(PLUGIN_NAME, [accessory])
+        this.externalOrPlatform(unbridge, accessory)
         this.accessories.push(accessory)
       } else {
-        const cachedAccessory = this.cachedAccessories.find((curAcc: PlatformAccessory) => curAcc.UUID === uuid)
-        if (!cachedAccessory) {
-          const accessory = new this.api.platformAccessory(cameraConfig.name!, uuid)
-          this.log.info('Configuring bridged accessory...', accessory.displayName)
-          this.setupAccessory(accessory, cameraConfig)
-          this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory])
-          this.accessories.push(accessory)
-        } else {
-          this.accessories.push(cachedAccessory)
-        }
+        this.accessories.push(cachedAccessory)
       }
     }
 
@@ -440,6 +435,14 @@ class FfmpegPlatform implements DynamicPlatformPlugin {
         this.api.unregisterPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory])
       }
     })
+  }
+
+  public async externalOrPlatform(unbridge: boolean, accessory: PlatformAccessory) {
+    if (unbridge) {
+      this.api.publishExternalAccessories(PLUGIN_NAME, [accessory])
+    } else {
+      this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory])
+    }
   }
 }
 

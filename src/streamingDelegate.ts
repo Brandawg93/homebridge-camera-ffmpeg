@@ -100,7 +100,7 @@ export class StreamingDelegate implements CameraStreamingDelegate {
     this.api = api
 
     this.cameraName = cameraConfig.name!
-    this.unbridge = cameraConfig.unbridge ?? false
+    this.unbridge = cameraConfig.unbridge ?? true
     this.videoConfig = cameraConfig.videoConfig!
     this.videoProcessor = videoProcessor || ffmpegPath as unknown as string || 'ffmpeg'
     this.recording = cameraConfig.videoConfig?.recording ?? false

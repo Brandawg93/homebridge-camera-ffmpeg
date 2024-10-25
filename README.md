@@ -58,7 +58,7 @@ Other users have been sharing configurations that work for them on our GitHub si
 - `model`: Set the model for display in the Home app. (Default: `Camera FFmpeg`)
 - `serialNumber`: Set the serial number for display in the Home app. (Default: `SerialNumber`)
 - `firmwareRevision`: Set the firmware revision for display in the Home app. (Default: current plugin version)
-- `unbridge`: Bridged cameras can cause slowdowns of the entire Homebridge instance. If unbridged, the camera will need to be added to HomeKit manually. (Default: `false`)
+- `unbridge`: Bridged cameras can cause slowdowns of the entire Homebridge instance. If unbridged, the camera will need to be added to HomeKit manually. (Default: `true`)
 
 #### Config Example with Manufacturer and Model Set
 
@@ -94,7 +94,7 @@ Other users have been sharing configurations that work for them on our GitHub si
 - `maxFPS`: The maximum frame rate used for video streamed to HomeKit. If set to 0, the framerate of the source is used. If not set, will use any frame rate HomeKit requests.
 - `maxBitrate`: The maximum bitrate used for video streamed to HomeKit, in kbit/s. If not set, will use any bitrate HomeKit requests.
 - `forceMax`: If set, the settings requested by HomeKit will be overridden with any 'maximum' values defined in this config. (Default: `false`)
-- `vcodec`: Set the codec used for encoding video sent to HomeKit, must be H.264-based.  You can change to a hardware accelerated video codec with this option, if one is available. (Default: `libx264`)
+- `vcodec`: Set the codec used for encoding video sent to HomeKit, must be H.264-based. You can change to a hardware accelerated video codec with this option, if one is available. (Default: `libx264`)
 - `audio`: Enables audio streaming from camera. (Default: `false`)
 - `packetSize`: If audio or video is choppy try a smaller value, should be set to a multiple of 188. (Default: `1316`)
 - `mapvideo`: Selects the stream used for video. (Default: FFmpeg [automatically selects](https://ffmpeg.org/ffmpeg.html#Automatic-stream-selection) a video stream)
