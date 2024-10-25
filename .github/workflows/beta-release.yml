@@ -9,7 +9,7 @@ jobs:
   build_and_test:
     uses: homebridge-plugins/.github/.github/workflows/nodejs-build-and-test.yml@latest
     with:
-      enable_coverage: true
+      enable_coverage: false
     secrets:
       token: ${{ secrets.GITHUB_TOKEN }}
   lint:
