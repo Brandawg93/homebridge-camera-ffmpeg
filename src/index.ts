@@ -458,9 +458,7 @@ function getVersion() {
   return version
 }
 
+// Register our platform with homebridge.
 export default (api: API): void => {
-  hap = api.hap
-  Accessory = api.platformAccessory
-
   api.registerPlatform(PLUGIN_NAME, PLATFORM_NAME, FfmpegPlatform)
 }
