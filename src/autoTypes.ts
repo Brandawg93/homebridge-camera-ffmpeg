@@ -1,5 +1,5 @@
-export type AutomationReturn = {
-  error: boolean;
-  message: string;
-  cooldownActive?: boolean;
-};
+export interface AutomationReturn {
+  error: boolean
+  message: string
+  cooldownActive?: boolean
+}

@@ -1,25 +1,28 @@
 {
   "compilerOptions": {
-    "target": "ES2018",
-    "module": "commonjs",
+    "target": "ES2022",
     "lib": [
-      "ES2015",
-      "ES2016",
-      "ES2017",
-      "ES2018"
+      "DOM",
+      "ES2022"
     ],
-    "sourceMap": true,
-    "outDir": "dist",
     "rootDir": "src",
-    "allowJs": true,
+    "module": "ES2022",
+    "moduleResolution": "node",
+    "types": ["node"],
     "strict": true,
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "removeComments": true,
+    "noImplicitAny": false,
     "declaration": true,
-    "declarationMap": true
+    "declarationMap": true,
+    "outDir": "dist",
+    "sourceMap": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true
   },
   "include": [
-    "./src/**/*"
+    "src"
+  ],
+  "exclude": [
+    "**/*.spec.ts"
   ]
 }
