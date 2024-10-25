@@ -30,7 +30,6 @@ import { StreamingDelegate } from './streamingDelegate.js'
 const version = getVersion()
 
 let hap: HAP
-let Accessory: typeof PlatformAccessory
 
 const PLUGIN_NAME = 'homebridge-camera-ffmpeg'
 const PLATFORM_NAME = 'Camera-ffmpeg'
@@ -364,7 +363,7 @@ class FfmpegPlatform implements DynamicPlatformPlugin {
   didFinishLaunching(): void {
     for (const [uuid, cameraConfig] of this.cameraConfigs) {
       if (cameraConfig.unbridge) {
-        const accessory = new Accessory(cameraConfig.name!, uuid)
+        const accessory = new this.api.platformAccessory(cameraConfig.name!, uuid)
         this.log.info('Configuring unbridged accessory...', accessory.displayName)
         this.setupAccessory(accessory, cameraConfig)
         this.api.publishExternalAccessories(PLUGIN_NAME, [accessory])
@@ -372,7 +371,7 @@ class FfmpegPlatform implements DynamicPlatformPlugin {
       } else {
         const cachedAccessory = this.cachedAccessories.find((curAcc: PlatformAccessory) => curAcc.UUID === uuid)
         if (!cachedAccessory) {
-          const accessory = new Accessory(cameraConfig.name!, uuid)
+          const accessory = new this.api.platformAccessory(cameraConfig.name!, uuid)
           this.log.info('Configuring bridged accessory...', accessory.displayName)
           this.setupAccessory(accessory, cameraConfig)
           this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory])
