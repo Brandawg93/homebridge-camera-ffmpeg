@@ -11,8 +11,8 @@ import type {
   PlatformConfig,
 } from 'homebridge'
 
-import type { AutomationReturn } from './autoTypes'
-import type { CameraConfig, FfmpegPlatformConfig } from './configTypes'
+import type { AutomationReturn } from './autoTypes.js'
+import type { CameraConfig, FfmpegPlatformConfig } from './configTypes.js'
 
 import { readFileSync } from 'node:fs'
 import http from 'node:http'
@@ -24,8 +24,8 @@ import {
 } from 'homebridge'
 import mqtt from 'mqtt'
 
-import { Logger } from './logger'
-import { StreamingDelegate } from './streamingDelegate'
+import { Logger } from './logger.js'
+import { StreamingDelegate } from './streamingDelegate.js'
 
 const version = getVersion()
 

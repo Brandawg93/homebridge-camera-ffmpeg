@@ -1,8 +1,8 @@
 import type { ChildProcess } from 'node:child_process'
 import type { Server } from 'node:net'
 
-import type { Logger } from './logger'
-import type { MP4Atom } from './recordingDelegate'
+import type { Logger } from './logger.js'
+import type { MP4Atom } from './recordingDelegate.js'
 
 import { Buffer } from 'node:buffer'
 import { spawn } from 'node:child_process'
@@ -10,7 +10,7 @@ import EventEmitter from 'node:events'
 import { createServer } from 'node:net'
 import { env } from 'node:process'
 
-import { listenServer, parseFragmentedMP4 } from './recordingDelegate'
+import { listenServer, parseFragmentedMP4 } from './recordingDelegate.js'
 
 interface PrebufferFmp4 {
   atom: MP4Atom

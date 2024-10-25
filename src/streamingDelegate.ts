@@ -21,8 +21,8 @@ import type {
 } from 'homebridge'
 import type { pickPortOptions } from 'pick-port'
 
-import type { CameraConfig, VideoConfig } from './configTypes'
-import type { Logger } from './logger'
+import type { CameraConfig, VideoConfig } from './configTypes.js'
+import type { Logger } from './logger.js'
 
 import { Buffer } from 'node:buffer'
 import { spawn } from 'node:child_process'

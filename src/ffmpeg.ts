@@ -3,8 +3,8 @@ import type { Writable } from 'node:stream'
 
 import type { StreamRequestCallback } from 'homebridge'
 
-import type { Logger } from './logger'
-import type { StreamingDelegate } from './streamingDelegate'
+import type { Logger } from './logger.js'
+import type { StreamingDelegate } from './streamingDelegate.js'
 
 import { spawn } from 'node:child_process'
 import os from 'node:os'

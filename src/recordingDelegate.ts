@@ -4,9 +4,9 @@ import type { Readable } from 'node:stream'
 
 import type { API, CameraController, CameraRecordingConfiguration, CameraRecordingDelegate, HAP, HDSProtocolSpecificErrorReason, RecordingPacket } from 'homebridge'
 
-import type { VideoConfig } from './configTypes'
-import type { Logger } from './logger'
-import type { Mp4Session } from './prebuffer'
+import type { VideoConfig } from './configTypes.js'
+import type { Logger } from './logger.js'
+import type { Mp4Session } from './prebuffer.js'
 
 import { Buffer } from 'node:buffer'
 import { spawn } from 'node:child_process'
@@ -17,7 +17,7 @@ import { env } from 'node:process'
 import ffmpegPath from 'ffmpeg-for-homebridge'
 import { APIEvent, AudioRecordingCodecType, H264Level, H264Profile } from 'homebridge'
 
-import { PreBuffer } from './prebuffer'
+import { PreBuffer } from './prebuffer.js'
 
 const ffmpegPathString = ffmpegPath as unknown as string
 
