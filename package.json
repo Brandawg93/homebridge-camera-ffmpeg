@@ -4,7 +4,23 @@
   "type": "module",
   "version": "4.0.0",
   "description": "Homebridge Plugin Providing FFmpeg-based Camera Support",
+  "author": {
+    "name": "Khaos Tian"
+  },
+  "contributors": [
+    {
+      "name": "Sunoo"
+    },
+    {
+      "name": "Khaos Tian"
+    }
+  ],
   "license": "ISC",
+  "maintainers": [
+    {
+      "name": "Homebridge"
+    }
+  ],
   "funding": [
     {
       "type": "kofi",
@@ -56,6 +72,7 @@
     "watch": "npm run build && npm link && nodemon",
     "build": "npm run clean && tsc",
     "prepublishOnly": "npm run lint && npm run build",
+    "postpublish": "npm run clean && npm ci",
     "clean": "shx rm -rf ./dist",
     "test": "npm run lint",
     "docs": "typedoc",
