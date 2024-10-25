@@ -5,7 +5,6 @@ import type {
   CharacteristicSetCallback,
   CharacteristicValue,
   DynamicPlatformPlugin,
-  HAP,
   Logging,
   PlatformAccessory,
   PlatformConfig,
@@ -28,8 +27,6 @@ import { Logger } from './logger.js'
 import { StreamingDelegate } from './streamingDelegate.js'
 
 const version = getVersion()
-
-let hap: HAP
 
 const PLUGIN_NAME = 'homebridge-camera-ffmpeg'
 const PLATFORM_NAME = 'Camera-ffmpeg'
@@ -114,19 +111,19 @@ class FfmpegPlatform implements DynamicPlatformPlugin {
       this.log.info('Identify requested.', accessory.displayName)
     })
 
-    const accInfo = accessory.getService(hap.Service.AccessoryInformation)
+    const accInfo = accessory.getService(this.api.hap.Service.AccessoryInformation)
     if (accInfo) {
-      accInfo.setCharacteristic(hap.Characteristic.Manufacturer, cameraConfig.manufacturer || 'Homebridge')
-      accInfo.setCharacteristic(hap.Characteristic.Model, cameraConfig.model || 'Camera FFmpeg')
-      accInfo.setCharacteristic(hap.Characteristic.SerialNumber, cameraConfig.serialNumber || 'SerialNumber')
-      accInfo.setCharacteristic(hap.Characteristic.FirmwareRevision, cameraConfig.firmwareRevision || version)
+      accInfo.setCharacteristic(this.api.hap.Characteristic.Manufacturer, cameraConfig.manufacturer || 'Homebridge')
+      accInfo.setCharacteristic(this.api.hap.Characteristic.Model, cameraConfig.model || 'Camera FFmpeg')
+      accInfo.setCharacteristic(this.api.hap.Characteristic.SerialNumber, cameraConfig.serialNumber || 'SerialNumber')
+      accInfo.setCharacteristic(this.api.hap.Characteristic.FirmwareRevision, cameraConfig.firmwareRevision || version)
     }
 
-    const motionSensor = accessory.getService(hap.Service.MotionSensor)
-    const doorbell = accessory.getService(hap.Service.Doorbell)
-    const doorbellTrigger = accessory.getServiceById(hap.Service.Switch, 'DoorbellTrigger')
-    const motionTrigger = accessory.getServiceById(hap.Service.Switch, 'MotionTrigger')
-    const doorbellSwitch = accessory.getServiceById(hap.Service.StatelessProgrammableSwitch, 'DoorbellSwitch')
+    const motionSensor = accessory.getService(this.api.hap.Service.MotionSensor)
+    const doorbell = accessory.getService(this.api.hap.Service.Doorbell)
+    const doorbellTrigger = accessory.getServiceById(this.api.hap.Service.Switch, 'DoorbellTrigger')
+    const motionTrigger = accessory.getServiceById(this.api.hap.Service.Switch, 'MotionTrigger')
+    const doorbellSwitch = accessory.getServiceById(this.api.hap.Service.StatelessProgrammableSwitch, 'DoorbellSwitch')
 
     if (motionSensor) {
       accessory.removeService(motionSensor)
@@ -144,7 +141,7 @@ class FfmpegPlatform implements DynamicPlatformPlugin {
       accessory.removeService(doorbellSwitch)
     }
 
-    const delegate = new StreamingDelegate(this.log, cameraConfig, this.api, hap, accessory, this.config.videoProcessor)
+    const delegate = new StreamingDelegate(this.log, cameraConfig, this.api, this.api.hap, accessory, this.config.videoProcessor)
 
     accessory.configureController(delegate.controller)
 
@@ -158,17 +155,17 @@ class FfmpegPlatform implements DynamicPlatformPlugin {
     // add motion sensor after accessory.configureController. Secure Video creates it own linked motion service
     if (cameraConfig.motion) {
       this.log.debug('add motion stuff', cameraConfig.name)
-      const motionSensor = new hap.Service.MotionSensor(cameraConfig.name)
+      const motionSensor = new this.api.hap.Service.MotionSensor(cameraConfig.name)
 
-      if (!accessory.getService(hap.Service.MotionSensor)) {
+      if (!accessory.getService(this.api.hap.Service.MotionSensor)) {
         accessory.addService(motionSensor)
       } else {
         this.log.debug('found motion sensor service', cameraConfig.name)
       }
       if (cameraConfig.switches) {
-        const motionTrigger = new hap.Service.Switch(`${cameraConfig.name} Motion Trigger`, 'MotionTrigger')
+        const motionTrigger = new this.api.hap.Service.Switch(`${cameraConfig.name} Motion Trigger`, 'MotionTrigger')
         motionTrigger
-          .getCharacteristic(hap.Characteristic.On)
+          .getCharacteristic(this.api.hap.Characteristic.On)
           .on(CharacteristicEventTypes.SET, (state: CharacteristicValue, callback: CharacteristicSetCallback) => {
             this.motionHandler(accessory, state as boolean, 1)
             callback()
@@ -179,16 +176,16 @@ class FfmpegPlatform implements DynamicPlatformPlugin {
 
     // add doorbell  after accessory.configureController. Secure Video creates it own linked doorbell service
     if (cameraConfig.doorbell) {
-      const doorbell = new hap.Service.Doorbell(`${cameraConfig.name} Doorbell`)
-      if (!accessory.getService(hap.Service.Doorbell)) {
+      const doorbell = new this.api.hap.Service.Doorbell(`${cameraConfig.name} Doorbell`)
+      if (!accessory.getService(this.api.hap.Service.Doorbell)) {
         accessory.addService(doorbell)
       } else {
         this.log.debug('found doorbell sensor service', cameraConfig.name)
       }
       if (cameraConfig.switches) {
-        const doorbellTrigger = new hap.Service.Switch(`${cameraConfig.name} Doorbell Trigger`, 'DoorbellTrigger')
+        const doorbellTrigger = new this.api.hap.Service.Switch(`${cameraConfig.name} Doorbell Trigger`, 'DoorbellTrigger')
         doorbellTrigger
-          .getCharacteristic(hap.Characteristic.On)
+          .getCharacteristic(this.api.hap.Characteristic.On)
           .on(CharacteristicEventTypes.SET, (state: CharacteristicValue, callback: CharacteristicSetCallback) => {
             this.doorbellHandler(accessory, state as boolean)
             callback()
@@ -198,9 +195,9 @@ class FfmpegPlatform implements DynamicPlatformPlugin {
     }
     /*
     for (let rtp of delegate.controller.streamManagements) {
-      this.log.debug("StreamMngt: "+rtp.getService().getCharacteristic(hap.Characteristic.Active).value.toString());
+      this.log.debug("StreamMngt: "+rtp.getService().getCharacteristic(this.api.hap.Characteristic.Active).value.toString());
     }
-    this.log.debug("recMngt:"+ accessory.getService(hap.Service.CameraRecordingManagement).getCharacteristic(hap.Characteristic.Active).value.toString());
+    this.log.debug("recMngt:"+ accessory.getService(this.api.hap.Service.CameraRecordingManagement).getCharacteristic(this.api.hap.Characteristic.Active).value.toString());
 */
     if (this.config.mqtt) {
       if (cameraConfig.mqtt) {
@@ -230,7 +227,7 @@ class FfmpegPlatform implements DynamicPlatformPlugin {
   }
 
   private doorbellHandler(accessory: PlatformAccessory, active = true): AutomationReturn {
-    const doorbell = accessory.getService(hap.Service.Doorbell)
+    const doorbell = accessory.getService(this.api.hap.Service.Doorbell)
     if (doorbell) {
       this.log.debug(`Switch doorbell ${active ? 'on.' : 'off.'}`, accessory.displayName)
       const timeout = this.doorbellTimers.get(accessory.UUID)
@@ -238,17 +235,17 @@ class FfmpegPlatform implements DynamicPlatformPlugin {
         clearTimeout(timeout)
         this.doorbellTimers.delete(accessory.UUID)
       }
-      const doorbellTrigger = accessory.getServiceById(hap.Service.Switch, 'DoorbellTrigger')
+      const doorbellTrigger = accessory.getServiceById(this.api.hap.Service.Switch, 'DoorbellTrigger')
       if (active) {
-        doorbell.updateCharacteristic(hap.Characteristic.ProgrammableSwitchEvent, hap.Characteristic.ProgrammableSwitchEvent.SINGLE_PRESS)
+        doorbell.updateCharacteristic(this.api.hap.Characteristic.ProgrammableSwitchEvent, this.api.hap.Characteristic.ProgrammableSwitchEvent.SINGLE_PRESS)
         if (doorbellTrigger) {
-          doorbellTrigger.updateCharacteristic(hap.Characteristic.On, true)
+          doorbellTrigger.updateCharacteristic(this.api.hap.Characteristic.On, true)
           let timeoutConfig = this.cameraConfigs.get(accessory.UUID)?.motionTimeout
           timeoutConfig = timeoutConfig && timeoutConfig > 0 ? timeoutConfig : 1
           const timer = setTimeout(() => {
             this.log.debug('Doorbell handler timeout.', accessory.displayName)
             this.doorbellTimers.delete(accessory.UUID)
-            doorbellTrigger.updateCharacteristic(hap.Characteristic.On, false)
+            doorbellTrigger.updateCharacteristic(this.api.hap.Characteristic.On, false)
           }, timeoutConfig * 1000)
           this.doorbellTimers.set(accessory.UUID, timer)
         }
@@ -258,7 +255,7 @@ class FfmpegPlatform implements DynamicPlatformPlugin {
         }
       } else {
         if (doorbellTrigger) {
-          doorbellTrigger.updateCharacteristic(hap.Characteristic.On, false)
+          doorbellTrigger.updateCharacteristic(this.api.hap.Characteristic.On, false)
         }
         return {
           error: false,
@@ -274,7 +271,7 @@ class FfmpegPlatform implements DynamicPlatformPlugin {
   }
 
   private motionHandler(accessory: PlatformAccessory, active = true, minimumTimeout = 0): AutomationReturn {
-    const motionSensor = accessory.getService(hap.Service.MotionSensor)
+    const motionSensor = accessory.getService(this.api.hap.Service.MotionSensor)
     if (motionSensor) {
       this.log.debug(`Switch motion detect ${active ? 'on.' : 'off.'}`, accessory.displayName)
       const timeout = this.motionTimers.get(accessory.UUID)
@@ -282,12 +279,12 @@ class FfmpegPlatform implements DynamicPlatformPlugin {
         clearTimeout(timeout)
         this.motionTimers.delete(accessory.UUID)
       }
-      const motionTrigger = accessory.getServiceById(hap.Service.Switch, 'MotionTrigger')
+      const motionTrigger = accessory.getServiceById(this.api.hap.Service.Switch, 'MotionTrigger')
       const config = this.cameraConfigs.get(accessory.UUID)
       if (active) {
-        motionSensor.updateCharacteristic(hap.Characteristic.MotionDetected, true)
+        motionSensor.updateCharacteristic(this.api.hap.Characteristic.MotionDetected, true)
         if (motionTrigger) {
-          motionTrigger.updateCharacteristic(hap.Characteristic.On, true)
+          motionTrigger.updateCharacteristic(this.api.hap.Characteristic.On, true)
         }
         if (!timeout && config?.motionDoorbell) {
           this.doorbellHandler(accessory, true)
@@ -300,9 +297,9 @@ class FfmpegPlatform implements DynamicPlatformPlugin {
           const timer = setTimeout(() => {
             this.log.debug('Motion handler timeout.', accessory.displayName)
             this.motionTimers.delete(accessory.UUID)
-            motionSensor.updateCharacteristic(hap.Characteristic.MotionDetected, false)
+            motionSensor.updateCharacteristic(this.api.hap.Characteristic.MotionDetected, false)
             if (motionTrigger) {
-              motionTrigger.updateCharacteristic(hap.Characteristic.On, false)
+              motionTrigger.updateCharacteristic(this.api.hap.Characteristic.On, false)
             }
           }, timeoutConfig * 1000)
           this.motionTimers.set(accessory.UUID, timer)
@@ -313,9 +310,9 @@ class FfmpegPlatform implements DynamicPlatformPlugin {
           cooldownActive: !!timeout,
         }
       } else {
-        motionSensor.updateCharacteristic(hap.Characteristic.MotionDetected, false)
+        motionSensor.updateCharacteristic(this.api.hap.Characteristic.MotionDetected, false)
         if (motionTrigger) {
-          motionTrigger.updateCharacteristic(hap.Characteristic.On, false)
+          motionTrigger.updateCharacteristic(this.api.hap.Characteristic.On, false)
         }
         if (config?.motionDoorbell) {
           this.doorbellHandler(accessory, false)

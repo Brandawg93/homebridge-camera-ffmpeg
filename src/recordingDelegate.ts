@@ -137,13 +137,13 @@ export class RecordingDelegate implements CameraRecordingDelegate {
   private readonly hap: HAP
   private readonly log: Logger
   private readonly cameraName: string
-  private readonly videoConfig!: VideoConfig
+  private readonly videoConfig?: VideoConfig
   private process!: ChildProcess
 
   private readonly videoProcessor: string
-  readonly controller!: CameraController
-  private preBufferSession!: Mp4Session
-  private preBuffer!: PreBuffer
+  readonly controller?: CameraController
+  private preBufferSession?: Mp4Session
+  private preBuffer?: PreBuffer
 
   constructor(log: Logger, cameraName: string, videoConfig: VideoConfig, api: API, hap: HAP, videoProcessor?: string) {
     this.log = log
@@ -160,7 +160,8 @@ export class RecordingDelegate implements CameraRecordingDelegate {
   }
 
   async startPreBuffer(): Promise<void> {
-    if (this.videoConfig.prebuffer) {
+    this.log.info(`start prebuffer ${this.cameraName}, prebuffer: ${this.videoConfig?.prebuffer}`)
+    if (this.videoConfig?.prebuffer) {
       // looks like the setupAcessory() is called multiple times during startup. Ensure that Prebuffer runs only once
       if (!this.preBuffer) {
         this.preBuffer = new PreBuffer(this.log, this.videoConfig.source ?? '', this.cameraName, this.videoProcessor)
@@ -221,11 +222,11 @@ export class RecordingDelegate implements CameraRecordingDelegate {
 
     const ffmpegInput: Array<string> = []
 
-    if (this.videoConfig.prebuffer) {
-      const input: Array<string> = await this.preBuffer.getVideo(configuration.mediaContainerConfiguration.fragmentLength ?? PREBUFFER_LENGTH)
+    if (this.videoConfig?.prebuffer) {
+      const input: Array<string> = this.preBuffer ? await this.preBuffer.getVideo(configuration.mediaContainerConfiguration.fragmentLength ?? PREBUFFER_LENGTH) : []
       ffmpegInput.push(...input)
     } else {
-      ffmpegInput.push(...(this.videoConfig.source ?? '').split(' '))
+      ffmpegInput.push(...(this.videoConfig?.source ?? '').split(' '))
     }
 
     this.log.debug('Start recording...', this.cameraName)
