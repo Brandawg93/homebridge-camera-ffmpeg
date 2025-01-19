@@ -505,29 +505,29 @@ export class StreamingDelegate implements CameraStreamingDelegate {
       if (this.videoConfig.returnAudioTarget) {
         const ffmpegReturnArgs
           = `-hide_banner`
-          + ` -protocol_whitelist pipe,udp,rtp,file,crypto`
-          + ` -f sdp`
-          + ` -c:a libfdk_aac`
-          + ` -i pipe:`
-          + ` ${this.videoConfig.returnAudioTarget
-          } -loglevel level${this.videoConfig.debugReturn ? '+verbose' : ''}`
+            + ` -protocol_whitelist pipe,udp,rtp,file,crypto`
+            + ` -f sdp`
+            + ` -c:a libfdk_aac`
+            + ` -i pipe:`
+            + ` ${this.videoConfig.returnAudioTarget
+            } -loglevel level${this.videoConfig.debugReturn ? '+verbose' : ''}`
 
         const ipVer = sessionInfo.ipv6 ? 'IP6' : 'IP4'
 
         const sdpReturnAudio
           = `v=0\r\n`
-          + `o=- 0 0 IN ${ipVer} ${sessionInfo.address}\r\n`
-          + `s=Talk\r\n`
-          + `c=IN ${ipVer} ${sessionInfo.address}\r\n`
-          + `t=0 0\r\n`
-          + `m=audio ${sessionInfo.audioReturnPort} RTP/AVP 110\r\n`
-          + `b=AS:24\r\n`
-          + `a=rtpmap:110 MPEG4-GENERIC/16000/1\r\n`
-          + `a=rtcp-mux\r\n` // FFmpeg ignores this, but might as well
-          + `a=fmtp:110 `
-          + `profile-level-id=1;mode=AAC-hbr;sizelength=13;indexlength=3;indexdeltalength=3; `
-          + `config=F8F0212C00BC00\r\n`
-          + `a=crypto:1 AES_CM_128_HMAC_SHA1_80 inline:${sessionInfo.audioSRTP.toString('base64')}\r\n`
+            + `o=- 0 0 IN ${ipVer} ${sessionInfo.address}\r\n`
+            + `s=Talk\r\n`
+            + `c=IN ${ipVer} ${sessionInfo.address}\r\n`
+            + `t=0 0\r\n`
+            + `m=audio ${sessionInfo.audioReturnPort} RTP/AVP 110\r\n`
+            + `b=AS:24\r\n`
+            + `a=rtpmap:110 MPEG4-GENERIC/16000/1\r\n`
+            + `a=rtcp-mux\r\n` // FFmpeg ignores this, but might as well
+            + `a=fmtp:110 `
+            + `profile-level-id=1;mode=AAC-hbr;sizelength=13;indexlength=3;indexdeltalength=3; `
+            + `config=F8F0212C00BC00\r\n`
+            + `a=crypto:1 AES_CM_128_HMAC_SHA1_80 inline:${sessionInfo.audioSRTP.toString('base64')}\r\n`
         activeSession.returnProcess = new FfmpegProcess(`${this.cameraName}] [Two-way`, request.sessionID, this.videoProcessor, ffmpegReturnArgs, this.log, this.videoConfig.debugReturn, this)
         activeSession.returnProcess.stdin.end(sdpReturnAudio)
       }
