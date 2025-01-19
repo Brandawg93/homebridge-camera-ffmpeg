@@ -1,5 +1,5 @@
 {
-  "name": "homebridge-camera-ffmpeg",
+  "name": "@homebridge-plugins/homebridge-camera-ffmpeg",
   "displayName": "Homebridge Camera FFmpeg",
   "type": "module",
   "version": "4.0.0",
